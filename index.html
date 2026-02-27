@@ -215,14 +215,31 @@ const playlistContainer = document.querySelector(".playlist");
 let tracks = [];
 let currentTrack = 0;
 
-/* Load MP3 Files via JSON */
+/* Robust MP3 Detection */
 async function loadTracks() {
+  // Try directory listing first
   try {
-    const response = await fetch("/music/tracks.json");
-    tracks = await response.json();
-  } catch {
-    title.textContent = "Failed to load tracks.json";
-    return;
+    const res = await fetch("/music/");
+    const text = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, "text/html");
+    tracks = [...doc.querySelectorAll("a")]
+      .map(link => link.getAttribute("href"))
+      .filter(href => href && href.endsWith(".mp3"));
+  } catch(e) {
+    console.warn("Directory listing failed, falling back to JSON:", e);
+  }
+
+  // If no tracks found, fallback to JSON
+  if (!tracks || tracks.length === 0) {
+    try {
+      const response = await fetch("/music/tracks.json");
+      tracks = await response.json();
+    } catch(e) {
+      title.textContent = "Failed to load MP3 tracks";
+      console.error(e);
+      return;
+    }
   }
 
   if (tracks.length > 0) {
