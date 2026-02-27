@@ -18,10 +18,7 @@
   --muted: #aaa;
 }
 
-* {
-  box-sizing: border-box;
-  font-family: system-ui, -apple-system, sans-serif;
-}
+* { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
 
 body {
   margin: 0;
@@ -35,7 +32,6 @@ body {
   color: var(--text);
 }
 
-/* Overlay blur effect */
 body::before {
   content: '';
   position: fixed;
@@ -59,13 +55,11 @@ body::before {
 .album-art {
   width: 100%;
   height: 220px;
-  background: linear-gradient(135deg, #222, #111);
+  background: url('/music/1.png') center center / cover no-repeat;
   border-radius: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 50px;
-  color: var(--accent);
   margin-bottom: 20px;
 }
 
@@ -74,15 +68,8 @@ body::before {
   margin-bottom: 15px;
 }
 
-.track-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.time {
-  font-size: 0.85rem;
-  color: var(--muted);
-}
+.track-title { font-size: 1.2rem; font-weight: 600; }
+.time { font-size: 0.85rem; color: var(--muted); }
 
 .progress-container {
   width: 100%;
@@ -93,49 +80,22 @@ body::before {
   margin: 10px 0 15px 0;
 }
 
-.progress {
-  height: 100%;
-  width: 0%;
-  background: var(--accent);
-  border-radius: 5px;
-}
+.progress { height: 100%; width: 0%; background: var(--accent); border-radius: 5px; }
 
 .controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 15px;
+  display: flex; justify-content: center; align-items: center; gap: 18px; margin-bottom: 15px;
 }
 
 .controls button {
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 1.4rem;
-  cursor: pointer;
+  background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer;
   transition: 0.2s ease;
 }
 
-.controls button:hover {
-  color: var(--accent-light);
-}
+.controls button:hover { color: var(--accent-light); }
+.play-btn { font-size: 2rem; color: var(--accent); }
 
-.play-btn {
-  font-size: 2rem;
-  color: var(--accent);
-}
-
-.volume-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.volume-slider {
-  width: 100%;
-  accent-color: var(--accent);
-}
+.volume-container { display: flex; align-items: center; gap: 10px; }
+.volume-slider { width: 100%; accent-color: var(--accent); }
 
 .playlist {
   margin-top: 15px;
@@ -150,26 +110,17 @@ body::before {
   border-radius: 6px;
 }
 
-.playlist div:hover {
-  background: rgba(255,255,255,0.1);
-}
+.playlist div:hover { background: rgba(255,255,255,0.1); }
+.active-track { background: var(--accent); }
 
-.active-track {
-  background: var(--accent);
-}
-
-@media (max-width: 480px) {
-  .album-art { height: 160px; }
-}
+@media (max-width: 480px) { .album-art { height: 160px; } }
 </style>
 </head>
 
 <body>
 
 <div class="player">
-  <div class="album-art">
-    <i class="bi bi-music-note-beamed"></i>
-  </div>
+  <div class="album-art"></div>
 
   <div class="track-info">
     <div class="track-title">Loading...</div>
@@ -215,31 +166,15 @@ const playlistContainer = document.querySelector(".playlist");
 let tracks = [];
 let currentTrack = 0;
 
-/* Robust MP3 Detection */
+/* Load tracks via JSON (required for static hosting) */
 async function loadTracks() {
-  // Try directory listing first
   try {
-    const res = await fetch("/music/");
-    const text = await res.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, "text/html");
-    tracks = [...doc.querySelectorAll("a")]
-      .map(link => link.getAttribute("href"))
-      .filter(href => href && href.endsWith(".mp3"));
+    const response = await fetch("/music/tracks.json");
+    tracks = await response.json();
   } catch(e) {
-    console.warn("Directory listing failed, falling back to JSON:", e);
-  }
-
-  // If no tracks found, fallback to JSON
-  if (!tracks || tracks.length === 0) {
-    try {
-      const response = await fetch("/music/tracks.json");
-      tracks = await response.json();
-    } catch(e) {
-      title.textContent = "Failed to load MP3 tracks";
-      console.error(e);
-      return;
-    }
+    title.textContent = "Failed to load tracks.json";
+    console.error(e);
+    return;
   }
 
   if (tracks.length > 0) {
@@ -267,21 +202,9 @@ function pauseTrack() {
   playBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i>';
 }
 
-function togglePlay() {
-  audio.paused ? playTrack() : pauseTrack();
-}
-
-function nextTrack() {
-  currentTrack = (currentTrack + 1) % tracks.length;
-  loadTrack(currentTrack);
-  playTrack();
-}
-
-function prevTrack() {
-  currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
-  loadTrack(currentTrack);
-  playTrack();
-}
+function togglePlay() { audio.paused ? playTrack() : pauseTrack(); }
+function nextTrack() { currentTrack = (currentTrack + 1) % tracks.length; loadTrack(currentTrack); playTrack(); }
+function prevTrack() { currentTrack = (currentTrack - 1 + tracks.length) % tracks.length; loadTrack(currentTrack); playTrack(); }
 
 function formatTime(sec) {
   const minutes = Math.floor(sec / 60);
@@ -292,8 +215,7 @@ function formatTime(sec) {
 audio.addEventListener("timeupdate", () => {
   const percent = (audio.currentTime / audio.duration) * 100;
   progress.style.width = percent + "%";
-  timeDisplay.textContent = 
-    `${formatTime(audio.currentTime)} / ${formatTime(audio.duration || 0)}`;
+  timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration || 0)}`;
 });
 
 progressContainer.addEventListener("click", (e) => {
@@ -308,10 +230,7 @@ playBtn.onclick = togglePlay;
 nextBtn.onclick = nextTrack;
 prevBtn.onclick = prevTrack;
 
-volumeSlider.addEventListener("input", () => {
-  audio.volume = volumeSlider.value;
-});
-
+volumeSlider.addEventListener("input", () => { audio.volume = volumeSlider.value; });
 audio.addEventListener("ended", nextTrack);
 
 function renderPlaylist() {
@@ -319,18 +238,13 @@ function renderPlaylist() {
   tracks.forEach((track, index) => {
     const div = document.createElement("div");
     div.textContent = track.replace(".mp3", "");
-    div.onclick = () => {
-      loadTrack(index);
-      playTrack();
-    };
+    div.onclick = () => { loadTrack(index); playTrack(); };
     playlistContainer.appendChild(div);
   });
 }
 
 function highlightActive() {
-  [...playlistContainer.children].forEach((el, i) => {
-    el.classList.toggle("active-track", i === currentTrack);
-  });
+  [...playlistContainer.children].forEach((el, i) => el.classList.toggle("active-track", i === currentTrack));
 }
 
 loadTracks();
