@@ -1,58 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dark Music Player</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Releases</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+/* Body & Container */
+body {
+    background-color: #121212;
+    color: #fff;
+    font-family: sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 0;
+}
+
+.player-container {
+    background: #1e1e1e;
+    border-radius: 20px;
+    padding: 30px;
+    width: 350px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+}
+
+/* Artist Info */
+.artist-circle {
+    width: 110px;
+    height: 110px;
+    border: 3px solid #ff4081;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 15px auto;
+}
+.artist-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.artist-name {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+.artist-info {
+    text-align: center;
+    color: #bbb;
+    font-size: 0.9rem;
+}
+
+/* Track Card */
+.track-card {
+    background: #252525;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Player Controls */
+.player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+.play-btn {
+    font-size: 1.8rem;
+    color: #ff4081;
+    cursor: pointer;
+}
+.play-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Progress Bar */
+.progress-container {
+    flex: 1;
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    margin: 0 15px;
+    cursor: pointer;
+    position: relative;
+}
+.progress {
+    height: 100%;
+    background: #ff4081;
+    width: 0%;
+    border-radius: 3px;
+}
+.time-display {
+    font-size: 0.8rem;
+    color: #bbb;
+}
+
+/* Scrollbar for player container */
+.player-container {
+    max-height: 85vh;
+    overflow-y: auto;
+}
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-thumb {
+    background: #ff4081;
+    border-radius: 10px;
+}
+</style>
 </head>
-<body class="bg-dark text-light">
+<body>
 
-<div class="background"></div>
+<div class="player-container">
+    <div class="text-center mb-4">
+        <div class="artist-circle">
+            <img src="images/1.png" alt="Artist">
+        </div>
+        <h5 class="artist-name">Sun in the Grain</h5>
+        <p class="artist-info">AK Rumi</p>
+    </div>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 player-container p-4">
-            
-            <div class="text-center mb-4">
-                <div class="artist-circle mx-auto mb-3">
-                    <img src="images/1.png" alt="Artist" class="img-fluid rounded-circle">
-                </div>
-                <h5 class="artist-name mb-1">Sun in the Grain</h5>
-                <p class="artist-info text-secondary">AK Rumi</p>
+    <div class="track-card" data-src="music/Heartache.mp3">
+        <h6>Heartache</h6>
+        <div class="player-controls">
+            <i class="bi bi-play-circle-fill play-btn"></i>
+            <div class="progress-container">
+                <div class="progress"></div>
             </div>
+            <span class="time-display">0:00 / 0:00</span>
+        </div>
+    </div>
 
-            <hr class="border-secondary mb-4">
-
-            <div id="audio-list" class="d-flex flex-column gap-3">
-
-                <div class="audio-card p-3 shadow-sm">
-                    <div class="d-flex align-items-center mb-2">
-                        <h6 class="mb-0">Heartache</h6>
-                    </div>
-                    <audio class="w-100 custom-audio" controls src="music/Heartache.mp3"></audio>
-                </div>
-
-
-
-                <div class="audio-card p-3 shadow-sm">
-                    <div class="d-flex align-items-center mb-2">
-                        <h6 class="mb-0">Dreamscape</h6>
-                    </div>
-                    <audio class="w-100 custom-audio" controls src="music/Dreamscape.mp3"></audio>
-                </div>
-
-
-
-
+    <div class="track-card" data-src="music/Dreamscape.mp3">
+        <h6>Dreamscape</h6>
+        <div class="player-controls">
+            <i class="bi bi-play-circle-fill play-btn"></i>
+            <div class="progress-container">
+                <div class="progress"></div>
             </div>
-
+            <span class="time-display">0:00 / 0:00</span>
         </div>
     </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+const tracks = document.querySelectorAll('.track-card');
+
+tracks.forEach(track => {
+    const audio = new Audio(track.dataset.src);
+    const playBtn = track.querySelector('.play-btn');
+    const progressContainer = track.querySelector('.progress-container');
+    const progressBar = track.querySelector('.progress');
+    const timeDisplay = track.querySelector('.time-display');
+
+    let isPlaying = false;
+
+    // Play/Pause toggle
+    playBtn.addEventListener('click', () => {
+        // Pause all other tracks
+        tracks.forEach(t => {
+            if (t !== track) {
+                t.querySelector('.play-btn').className = 'bi bi-play-circle-fill play-btn';
+                t.audio && t.audio.pause();
+            }
+        });
+
+        if (!isPlaying) {
+            audio.play();
+            playBtn.className = 'bi bi-pause-circle-fill play-btn';
+            isPlaying = true;
+        } else {
+            audio.pause();
+            playBtn.className = 'bi bi-play-circle-fill play-btn';
+            isPlaying = false;
+        }
+    });
+
+    // Update progress bar
+    audio.addEventListener('timeupdate', () => {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = percent + '%';
+        timeDisplay.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+    });
+
+    // Click to seek
+    progressContainer.addEventListener('click', (e) => {
+        const width = progressContainer.clientWidth;
+        const clickX = e.offsetX;
+        audio.currentTime = (clickX / width) * audio.duration;
+    });
+
+    // Reset button when track ends
+    audio.addEventListener('ended', () => {
+        playBtn.className = 'bi bi-play-circle-fill play-btn';
+        progressBar.style.width = '0%';
+        isPlaying = false;
+    });
+
+    // helper to format time
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+    }
+
+    // store audio reference for pause on other tracks
+    track.audio = audio;
+});
+</script>
+
 </body>
 </html>
